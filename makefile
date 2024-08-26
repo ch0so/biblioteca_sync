@@ -1,22 +1,35 @@
-# Nombre del ejecutable : libsync
-# Version : 1.0
+# Nombre del ejecutable : homework_sync_library
+#
+# Versión : 1.0
+#
 # Fecha de creación: Agosto 26, 2024
+#
 # Autores : 
 #    - Ávila Ramírez Paublo Alexander (2022035584)
-#    - Reyes Rodriguez Ricardo (2022101681)
-#    - Zúñiga Campos Omar Jesús (2022019053)
+#    - Reyes Rodriguez Ricardo Andrés (2022101681)
+#    - Zúñiga Campos Omar Jesús       (2022019053)
+#
 # Descripción:
 # Este Makefile está diseñado para compilar una biblioteca estática y un programa ejecutable
-# en un entorno Fedora. La biblioteca estática incluye implementaciones de mutex, semáforo,
-# barrera y lock de lectura/escritura. El ejecutable se enlaza con esta biblioteca para 
-# demostrar su uso. 
+# en un entorno Fedora. La biblioteca estática incluye implementaciones de mutex, semáforo binario,
+# semáforo de conteo, barrera y candado de lectura/escritura. 
+# El ejecutable se enlaza con esta biblioteca para demostrar su uso. 
+#
 # Importante tener en cuenta:
-# - Asegúrate de que el compilador GCC y las herramientas de construcción básicas están instaladas
-#   en tu sistema Fedora. Puedes instalar estas herramientas usando el siguiente comando:
+# - Es necesario que se asegure que el compilador GCC y las herramientas de construcción básicas están instaladas
+#   en un sistema de Fedora Workstation 40. Se pueden instalar las herramientas necesarias usando el siguiente comando:
 #     sudo dnf install gcc make
+# 
+# - En el caso de no contar con Fedora WOrkstation 40, debe dirigirse a la página oficial e instalar el sistema operativo
+#   que se encuentra en el siguiente enlace:
+#     https://fedoraproject.org/es/workstation/download/
+# 
+# - En el link suminstrado en el anterior punto, puede encontrar la documentación oficial que le ayudará a realizar el proceso
+#   de instalación adecuadamente.
 #
 # - El Makefile asume que los archivos fuente (.c) y de cabecera (.h) están en el mismo directorio
-#   que el Makefile. Si usas subdirectorios, ajusta las rutas en las variables SRCS y HDRS.
+#   que el Makefile. Si se usan subdirectorios, se deben ajustar las rutas en las variables SRCS y HDRS.
+#
 # - La biblioteca estática se crea con el nombre 'libsync.a' y se enlaza con el ejecutable llamado
 #   'homework_sync_library'.
 #
@@ -31,11 +44,11 @@ CC = gcc
 CFLAGS = -Wall -g
 
 # Archivos de código fuente y objeto
-SRCS = mutex.c barrier.c semaphore.c rwlock.c main.c
+SRCS = barrier.c binary_semaphore.c counting_semaphore.c mutex.c read_write_lock.c main.c
 OBJS = $(SRCS:.c=.o)
 
 # Archivos de cabecera
-HDRS = mutex.h barrier.h semaphore.h rwlock.h
+HDRS = barrier.h binary_semaphore.h counting_semaphore.h mutex.h read_write_lock.h
 
 # Nombre de la biblioteca y el ejecutable
 LIBRARY = libsync.a
@@ -49,7 +62,7 @@ $(EXECUTABLE): $(OBJS) $(LIBRARY)
 	$(CC) $(CFLAGS) -o $@ $(OBJS) -L. -lsync -pthread
 
 # Construir la biblioteca estática
-$(LIBRARY): mutex.o semaphore.o barrier.o rwlock.o
+$(LIBRARY): $(OBJS)
 	ar rcs $@ $^
 
 # Compilar archivos .c en archivos .o
@@ -58,8 +71,6 @@ $(LIBRARY): mutex.o semaphore.o barrier.o rwlock.o
 
 # Limpiar archivos generados
 clean:
-	rm -f $(OBJS) $(EXECUTABLE) $(LIBRARY)
+	rm -f $(OBJS) $(LIBRARY)
 
 .PHONY: all clean
-
-
