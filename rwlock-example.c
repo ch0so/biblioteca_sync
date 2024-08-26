@@ -4,72 +4,84 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#define READERS 5
-#define NUMSTRINGS 3
-#define BUFLENGTH 1024
+#define NUM_READERS 5
+#define NUM_STRINGS 3
+#define BUFFER_LENGTH 1024
 
-char buffer[BUFLENGTH] = {0};
+char buffer[BUFFER_LENGTH] = {0};
 ReadWriteLock rwlock;
 
-char *strings[NUMSTRINGS] = {
-    "Help me Obiwan Kenobu, you're my only hope!",
-    "When 900 years old you reach, look as good, you will not.",
-    "I've got a bad feeling about this."};
+char *messages[NUM_STRINGS] = {
+    "Cadena de texto #1",
+    "Esta es la segunda cadena de texto",
+    "Estamos en la ultima cadena de texto del ejemplo"};
 
-void *readerthreadfunc(void *arg)
+/*
+ * Función para los hilos lectores.
+ * Cada lector adquirirá el bloqueo de lectura, leerá del buffer
+ * y luego liberará el bloqueo.
+ */
+void *readerThread(void *arg)
 {
     long threadId = (long)arg;
 
-    while (true)
+    while (1)
     {
         rwlock_rdlock(&rwlock);
-        printf("%ld: %s\n", threadId, buffer);
-        usleep(250000);
+        printf("Reader %ld: %s\n", threadId, buffer);
+        usleep(250000); // Tiempo para simular lectura
         rwlock_unlock(&rwlock);
-        usleep(500000);
+        usleep(500000); // Tiempo antes de leer de nuevo
     }
 
     return NULL;
 }
 
-void slow_copy(char *dest, char *src, int length)
+/*
+ * Función que realiza una copia lenta de una cadena de origen a un destino.
+ * Esta función simula un proceso de escritura lento, con una pausa entre
+ * cada carácter copiado.
+ */
+void slowMessageCopy(char *dest, const char *src, int length)
 {
     for (int i = 0; i < length; i++)
     {
         dest[i] = src[i];
-        if (dest[i] == 0)
+        if (dest[i] == '\0')
             break;
-        if (i + 1 == length)
-        {
-            dest[i] = 0;
-            break;
-        }
-        usleep(50000);
+        usleep(50000); // Tiempo entre cada carácter copiado
     }
 }
 
+/*
+ * Función principal del programa.
+ * Crea hilos lectores y continuamente escribe cadenas de texto en el buffer,
+ * permitiendo que los lectores lean el contenido del buffer mientras no se
+ * esté escribiendo.
+ */
 int main(void)
 {
-    pthread_t readers[READERS];
+    pthread_t readers[NUM_READERS];
 
     rwlock_init(&rwlock);
 
-    for (long i = 0; i < READERS; i++)
+    // Crea hilos lectores
+    for (long i = 0; i < NUM_READERS; i++)
     {
-        pthread_create(&readers[i], NULL, readerthreadfunc, (void *)i);
+        pthread_create(&readers[i], NULL, readerThread, (void *)i);
     }
 
     int i = 0;
-    while (true)
+    while (1)
     {
         rwlock_wrlock(&rwlock);
-        slow_copy(buffer, strings[i], BUFLENGTH);
+        slowMessageCopy(buffer, messages[i], BUFFER_LENGTH);
         rwlock_unlock(&rwlock);
-        i = (i + 1) % NUMSTRINGS;
+        i = (i + 1) % NUM_STRINGS;
         sleep(2);
     }
 
-    // This line will never be reached, but you would normally clean up here
+    // Normalmente se limpiarían los recursos aquí (Nunca se alcanza esta línea)
     rwlock_destroy(&rwlock);
 
     return 0;
