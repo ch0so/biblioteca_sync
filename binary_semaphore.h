@@ -29,7 +29,7 @@ Referencias bibliográficas:
 typedef struct {
     pthread_mutex_t mutex;      // Mutex para proteger el acceso al semáforo
     pthread_cond_t conditional; // Variable de condición para sincronización
-    int value;                  // Número entero que indica el estado del semáforo (0 para bloqueado, 1 para desbloqueado)
+    int value;                  // Número entero que indica el estado del semáforo, donde 0 es para bloqueado y 1 para desbloqueado
 } binary_semaphore_t;
 
 // Función que inicializa un semáforo binario con un valor inicial
