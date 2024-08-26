@@ -16,11 +16,6 @@ char *messages[NUM_STRINGS] = {
     "Esta es la segunda cadena de texto",
     "Estamos en la ultima cadena de texto del ejemplo"};
 
-/*
- * Función para los hilos lectores.
- * Cada lector adquirirá el bloqueo de lectura, leerá del buffer
- * y luego liberará el bloqueo.
- */
 void *readerThread(void *arg)
 {
     long threadId = (long)arg;
@@ -37,11 +32,6 @@ void *readerThread(void *arg)
     return NULL;
 }
 
-/*
- * Función que realiza una copia lenta de una cadena de origen a un destino.
- * Esta función simula un proceso de escritura lento, con una pausa entre
- * cada carácter copiado.
- */
 void slowMessageCopy(char *dest, const char *src, int length)
 {
     for (int i = 0; i < length; i++)
@@ -53,12 +43,6 @@ void slowMessageCopy(char *dest, const char *src, int length)
     }
 }
 
-/*
- * Función principal del programa.
- * Crea hilos lectores y continuamente escribe cadenas de texto en el buffer,
- * permitiendo que los lectores lean el contenido del buffer mientras no se
- * esté escribiendo.
- */
 int main(void)
 {
     pthread_t readers[NUM_READERS];
