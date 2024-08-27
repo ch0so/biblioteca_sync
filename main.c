@@ -256,7 +256,7 @@ void* reader_thread_function(void* arg) {
 
 void slow_copy(char *destination, char *origin, int length) {
     /*
-        Función que copia lentamente una cadena de caracteres de origin a dest
+        Función que copia lentamente una cadena de caracteres de origin a destination
 
         Entradas:
         - destination: Puntero al buffer de destino

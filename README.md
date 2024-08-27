@@ -151,7 +151,7 @@ Puntero a un entero que representa el identificador del hilo.
 
 #### Salidas:
 
-No devuelve un valor como tal, solo un NULL que esto se debe más que nada a la sintáxis vista en clase.
+No retorna un valor como tal, solo un NULL que esto se debe más que nada a la sintáxis vista en clase.
 
 #### Restricciones:
 
@@ -324,7 +324,7 @@ Puntero a un entero que representa el identificador del productor.
 
 #### Salidas:
 
-No devuelve un valor como tal, solo un NULL que esto se debe más que nada a la sintáxis vista en clase.
+No retorna un valor como tal, solo un NULL que esto se debe más que nada a la sintáxis vista en clase.
 
 #### Restricciones:
 
@@ -364,7 +364,7 @@ Puntero a un entero que representa el identificador del consumidor.
 
 #### Salidas:
 
-No devuelve un valor como tal, solo un NULL que esto se debe más que nada a la sintáxis vista en clase.
+No retorna un valor como tal, solo un NULL que esto se debe más que nada a la sintáxis vista en clase.
 
 #### Restricciones:
 
@@ -558,7 +558,7 @@ Puntero a un entero que representa el identificador del hilo.
 
 #### Salidas:
 
-No devuelve un valor como tal, solo un NULL que esto se debe más que nada a la sintáxis vista en clase.
+No retorna un valor como tal, solo un NULL que esto se debe más que nada a la sintáxis vista en clase.
 
 #### Restricciones:
 
@@ -597,7 +597,7 @@ Puntero a un entero que representa el identificador del hilo.
 
 #### Salidas:
 
-No devuelve un valor como tal, solo un NULL que esto se debe más que nada a la sintáxis vista en clase.
+No retorna un valor como tal, solo un NULL que esto se debe más que nada a la sintáxis vista en clase.
 
 #### Restricciones:
 
@@ -691,12 +691,12 @@ La estructura `read_write_lock_t` define un read/write lock utilizando un mutex,
 
 ```c
    typedef struct {
-      pthread_mutex_t mutex;       // Mutex para proteger el acceso al candado de lectura/escritura
-      pthread_cond_t read;         // Variable de condición para sincronización de los lectores
-      pthread_cond_t write;        // Variable de condición para sincronización de los escritores
-      int readers;                 // Número entero que indica la cantidad actual de lectores
-      int writers;                 // Número entero que indica la cantidad actual de escritores en espera
-      int writing_flag;            // Indicador entero que señala si un escritor está escribiendo actualmente
+      pthread_mutex_t mutex;    
+      pthread_cond_t read;        
+      pthread_cond_t write;        
+      int readers;                 
+      int writers;              
+      int writing_flag;            
    } read_write_lock_t;
 ```
 
@@ -774,7 +774,7 @@ Función que destruye el read/write lock, liberando los recursos utilizados.
 
 A continuación, se presentan las funciones usadas en la implementación del ejemplo de read/write lock que consiste en que hay lectores y escritores que acceden a un recurso compartido:
 
-### 1. Función reader
+### 1. Función reader_thread_function
 
 ```c
 void* reader_thread_function(void* arg) {
@@ -803,7 +803,7 @@ void* reader_thread_function(void* arg) {
 
 #### Descripción de la función:
 
-Esta función define el comportamiento de un hilo lector que cicla infinitamente. Iniciamos al hacer un read lock para la lectura del buffer, esta es una variable en donde nuestros escritores van a escribir mensajes obtenidos del array messages. Después de leer imprimimos él lo leído y hacemos un usleep(250000) para simular una lectura extensiva. Finalmente, hacemos un usleep(500000); para limitar el uso de los lectores.
+Esta función define el comportamiento de un hilo lector que cicla infinitamente. Se inicia al hacer un read lock para la lectura del buffer, esta es una variable en donde los escritores van a escribir mensajes obtenidos del array messages. Después de leer, se imprime lo leído y se hace un usleep(250000) para simular una lectura extensiva. Finalmente, se hace un usleep(500000); para limitar el uso de los lectores.
 
 #### Entradas:
 
@@ -813,15 +813,67 @@ Puntero a un entero que representa el identificador del hilo.
 
 #### Salidas:
 
-No devuelve un valor como tal, solo un NULL que esto se debe más que nada a la sintáxis vista en clase.
+No retorna un valor como tal, solo un NULL que esto se debe más que nada a la sintáxis vista en clase.
 
 #### Restricciones:
 
 La variable `arg` debe apuntar a un entero válido.
 
-### 2. Creación de hilos de lectura y escritura
+### 2. Función slow_copy
 
 ```c
+void slow_copy(char *destination, char *origin, int length) {
+    for (int i = 0; i < length; i++) {
+        destination[i] = origin[i];
+        if (destination[i] == '\0') break;
+        usleep(50000);
+    }
+}
+```
+
+#### Descripción de la función:
+
+Función que copia lentamente una cadena de caracteres de origin a destination.
+
+#### Entradas:
+
+##### destination:
+
+Puntero al buffer de destino.
+
+##### origin:
+
+Puntero a la cadena de origen.
+
+##### length:
+
+Longitud máxima a copiar.
+
+#### Salidas:
+
+No retorna nada.
+
+#### Restricciones:
+##### Primera restricción:
+      Los punteros destination y origin deben ser válidos.
+##### Segunda restricción:
+      La longitud debe ser mayor que 0.
+
+### 3. Creación de hilos de lectura y escritura
+
+```c
+   #define NUM_READERS 5
+
+   read_write_lock_t read_write_lock;
+
+   char shared_buffer[BUFFER_LENGTH] = {0};
+   char *messages[NUM_STRINGS] = {
+      "Cadena de texto #1",
+      "Segunda cadena de texto",
+      "Ahora es la tercera cadena de texto",
+      "Cadena de texto final del ejemplo",
+   };
+
    pthread_t readers[NUM_READERS];
 
    read_write_lock_init(&read_write_lock);
@@ -870,7 +922,7 @@ Se crea un hilo escritor que escribe en el buffer utilizando `slow_copy`. Este u
 
 `read_write_lock_destroy` al final libera los recursos asociados con el read/write lock.
 
-### 3. Ejecución del ejemplo:
+### 4. Ejecución del ejemplo:
 
 Para poder ejecutar el ejemplo de read/write lock, ejecute estos pasos:
 
@@ -891,3 +943,174 @@ Use el siguiente comando para ejecutar el programa:
 ```
 
 Donde `homework_sync_library` es el nombre del ejecutable que se genero en el directorio donde ejecutó el comando `make`, y `read_write_lock` es el argumento para indicarle al programa principal que debe correr el ejemplo de read/write lock.
+
+# Implementación de mutex
+
+## Qué es un mutex
+
+Un mutex, que es una abreviatura de mutual exclusion o exclusión mutua en español, es un mecanismo empleado en la programación concurrente para asegurar que múltiples procesos o hilos no accedan de manera simultánea a un recurso compartido, siendo este el caso de una variable o región crítica de código, lo cual se consigue al bloquear el acceso al recurso al ser utilizado por un proceso, siendo así que otros procesos no pueden acceder a ese recurso hasta que sea liberado (IBM, 2023).
+
+## Estructura para el mutex
+
+La estructura mutex_t define un mutex utilizando el mutex de la biblioteca de pthread:
+
+```c
+   typedef struct {
+      pthread_mutex_t mutex; 
+   } mutex_t;
+```
+
+Los componentes serían los siguientes:
+
+### 1. mutex
+
+Un mutex que se utiliza para la sincronización de hilos.
+
+## Funciones de mutex
+
+A continuación, se presentan las funciones usadas en la implementación de mutex:
+
+### 1. Inicialización:
+
+```c
+ void mutex_init(mutex_t *parameter_mutex);
+```
+
+Función que inicializa un mutex.
+
+### 2. Bloqueo:
+
+```c
+ void mutex_lock(mutex_t *parameter_mutex);
+```
+Función que bloquea un mutex para evitar condiciones de carrera.
+
+### 3. Desbloqueo:
+
+```c
+void mutex_unlock(mutex_t *parameter_mutex);
+```
+Función que desbloquea un mutex, permitiendo a otros hilos acceder a la sección crítica.
+
+### 4. Destrucción:
+
+```c
+void mutex_destroy(mutex_t *parameter_mutex);
+```
+
+Función que destruye el mutex, liberando los recursos utilizados.
+
+## Ejemplo utilizado para el mutex
+
+A continuación, se presentan las funciones que forman parte de la implementación del ejemplo de mutex que consiste en que se simula a una persona que espera, usa y luego deja una silla de espera, utilizando un mutex para asegurar acceso exclusivo a la silla:
+
+### 1. Función barrier_example
+
+```c
+void* mutex_example(void* arg) {
+    int person_id = *(int*)arg;
+
+    printf("Person %d is waiting to use the chair...\n", person_id);
+    sleep(rand() % 3); 
+
+    mutex_lock(&mutex); 
+    printf("Person %d is sitting on the chair.\n", person_id);
+    sleep(2); 
+    printf("Person %d is leaving the chair.\n", person_id);
+    mutex_unlock(&mutex);
+
+    free(arg);
+    return NULL;
+}
+```
+
+#### Descripción de la función:
+
+Función que simula a una persona que espera, usa y luego deja una silla de espera, utilizando un mutex para asegurar acceso exclusivo a la silla.
+
+#### Entradas:
+
+##### arg:
+
+Puntero a un entero que representa el identificador de la persona.
+
+#### Salidas:
+
+No retorna un valor como tal, solo un NULL que esto se debe más que nada a la sintáxis vista en clase.
+
+#### Restricciones:
+##### Primera restricción:
+      La variable arg debe apuntar a un entero válido que represente el identificador de la persona.
+##### Segunda restricción:
+      El mutex debe estar correctamente inicializado antes de llamar a esta función.
+
+### 2. Creación y sincronización de hilos
+
+```c
+   #define NUM_PERSONS 5
+
+   mutex_t mutex; 
+
+   pthread_t threads[NUM_PERSONS];
+
+   mutex_init(&mutex);
+
+   for (int i = 0; i < NUM_PERSONS; i++) {
+      int* person_id = malloc(sizeof(int));
+      *person_id = i;
+      pthread_create(&threads[i], NULL, mutex_example, person_id);
+   }
+
+   for (int i = 0; i < NUM_PERSONS; i++) {
+      pthread_join(threads[i], NULL);
+   }
+
+   mutex_destroy(&mutex);
+```
+
+#### Inicialización:
+
+Se emplea `mutex_init` para la inicialización del mutex.
+
+#### Creación:
+
+Se crean `NUM_PERSONS` hilos, cada uno ejecutando la función `mutex_example`. En el código se puede ver que `NUM_PERSONS` en este caso son 5 hilos.
+
+#### Espera de hilos:
+
+`pthread_join` se encarga de esperar a que todos los hilos terminen su ejecución.
+
+#### Destrucción:
+
+`barrier_destroy` al final libera los recursos asociados con el mutex.
+
+### 3. Ejecución del ejemplo:
+
+Para poder ejecutar el ejemplo de mutex, ejecute estos pasos:
+
+##### 1. Compile el código:
+
+Diríjase al directorio en el que se descargó el proyecto y ejecute el siguiente comando:
+
+```bash
+make
+```
+
+##### 2. Ejecute el ejemplo:
+
+Use el siguiente comando para ejecutar el programa:
+
+```bash
+./homework_sync_library mutex
+```
+
+Donde `homework_sync_library` es el nombre del ejecutable que se genero en el directorio donde ejecutó el comando `make`, y `mutex` es el argumento para indicarle al programa principal que debe correr el ejemplo de mutex.
+
+## Referencias bibliográficas
+Toda esta implementación así como este README fue elaborado gracias a estas referencias bibliográficas:
+- Ansari, F. (2023, 18 mayo). Best practices for an eye catching GitHub Readme [Las mejores prácticas para un Readme de GitHub actractivo a la vista]. Hatica. https://www.hatica.io/blog/best-practices-for-github-readme/
+- Desai, J. (2020, 11 junio). Barrier Synchronization in Threads [Sincronización de Barreras en Hilos]. Medium. https://medium.com/@jaydesai36/barrier-synchronization-in-threads-3c56f947047
+- GeeksforGeeks. (2023, 9 mayo). Thread functions in C/C++ [Funciones de Hilos en C/C++]. GeeksforGeeks. https://www.geeksforgeeks.org/thread-functions-in-c-c/
+- GeeksforGeeks. (2024, 1 agosto). Semaphores in Process Synchronization [Semáforos en Sincronización de Procesos]. GeeksforGeeks. https://www.geeksforgeeks.org/semaphores-in-process-synchronization/
+- IBM. (2023, marzo 24). Using mutexes [Uso de Mutexes]. IBM. https://www.ibm.com/docs/pt-br/aix/7.2?topic=programming-using-mutexes
+- IBM. (2023, marzo 24). Using read/write locks [Uso de Bloqueos de Lectura/Escritura]. https://www.ibm.com/docs/en/aix/7.2?topic=programming-using-readwrite-locks
