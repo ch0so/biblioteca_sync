@@ -15,7 +15,7 @@ Biblioteca Sync usando hilos y mutex, la cual fue implementada en C usando pthre
 - Barrera
 - Read/write lock
 
-Además, incluye ejemplos de prácticos de uso para cada uno para un mejor entendimiento.
+Además, incluye ejemplos prácticos de uso para cada uno para un mejor entendimiento.
 
 ## Instalación
 
