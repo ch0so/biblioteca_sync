@@ -8,7 +8,7 @@
 
 ## Introducción
 
-Biblioteca Sync usando hilos y wait/notify que fue implementada en C e incorpora las siguientes estructuras de sincronización:
+Biblioteca Sync usando hilos y mutex, la cual fue implementada en C usando pthread e incorpora las siguientes estructuras de sincronización:
 
 - Mutex
 - Semáforo
